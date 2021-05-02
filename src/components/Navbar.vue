@@ -18,7 +18,7 @@
 
 <template>
   <nav>
-    <v-app-bar clipped-right fixed flat app height="75" elevation="5" style="z-index: 9999;">
+    <v-app-bar clipped-right flat app height="75" elevation="5" style="z-index: 9999;">
       <v-toolbar-title class="text-uppercase grey--text">
         <v-btn text height="60" color="primary">
           <v-img
@@ -42,11 +42,10 @@
 
     <v-navigation-drawer
       app
-      fixed
+      absolute
       right
       v-model="drawer"
-      clipped
-      :style="{top: $vuetify.application.top + 'px', zIndex: 4}">
+      clipped>
       <template v-slot:prepend>
         <v-container v-if="ls.loginCookie" style="height: 75px">
           <v-list-item v-if="userInfos.avatar">
