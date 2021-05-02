@@ -55,8 +55,11 @@
                      :src="userInfos.avatar || ''"/>
             </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title>{{ userInfos.username || '' }}</v-list-item-title>
-              <v-list-item-subtitle>{{ userInfos.email || '' }}</v-list-item-subtitle>
+              <v-list-item-title>
+                {{ userInfos.username || 'Wumpus' }}
+                <span class="font-weight-thin">#{{ userInfos.discriminator || '0000' }}</span>
+              </v-list-item-title>
+              <v-list-item-subtitle>{{ userInfos.email || 'wumpus@youcannnotunblock.discord' }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
           <v-skeleton-loader
@@ -77,7 +80,7 @@
             <v-list-item
               :to="item.path || '/'"
               :color="item.color || 'primary'"
-              v-if="(item.anonymous ? true : !!ls.loginCookie) && !item.title.includes('divider')"
+              v-if="(!!item.anonymous ? (!!ls.loginCookie ? !!item.stayOnLogin : true) : !!ls.loginCookie) && !item.title.includes('divider')"
               link>
               <v-list-item-icon>
                 <v-icon>mdi-{{ item.icon }}</v-icon>
@@ -108,7 +111,8 @@ export default {
         {
           icon: 'home',
           title: 'Home',
-          anonymous: true
+          anonymous: true,
+          stayOnLogin: true
         },
         {
           icon: 'view-dashboard',
@@ -116,6 +120,12 @@ export default {
         },
         {
           title: 'divider-1'
+        },
+        {
+          icon: 'discord',
+          title: 'Log In',
+          color: 'primary',
+          anonymous: true
         },
         {
           icon: 'logout',
@@ -130,7 +140,7 @@ export default {
   },
   created () {
     this.ls = localStorage
-    if (this.ls.loginCookie) {
+    if (this.ls.loginCookie && this.ls.loginCookie !== '') {
       axios.get(`${config.backend.url}:${config.backend.port}/api/v1/user`, {
         headers: {
           Authorization: this.ls.loginCookie
@@ -138,17 +148,21 @@ export default {
       })
         .then(res => {
           const json = res.data
-          console.log(json)
           if (res.status !== 200) {
             this.ls.loginCookie = ''
             location.reload()
             return
           }
           this.userInfos = {
-            username: json.username + '#' + json.discriminator,
+            username: json.username,
+            discriminator: json.discriminator,
             avatar: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.png`,
             email: json.email
           }
+        })
+        .catch(() => {
+          this.ls.loginCookie = ''
+          location.reload()
         })
     }
   }
@@ -160,5 +174,10 @@ export default {
   $m: 5px;
   margin-top: $m;
   margin-bottom: 5px;
+}
+
+.v-app-bar,
+.v-navigation-drawer {
+  position: fixed;
 }
 </style>
