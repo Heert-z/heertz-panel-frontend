@@ -18,7 +18,7 @@
 
 <template>
   <nav>
-    <v-app-bar clipped-right flat app height="75" elevation="5" style="z-index: 9999;">
+    <v-app-bar clipped-right fixed flat app height="75" elevation="5" style="z-index: 9999;">
       <v-toolbar-title class="text-uppercase grey--text">
         <v-btn text height="60" color="primary">
           <v-img
@@ -42,7 +42,7 @@
 
     <v-navigation-drawer
       app
-      absolute
+      fixed
       right
       v-model="drawer"
       clipped
@@ -174,10 +174,5 @@ export default {
   $m: 5px;
   margin-top: $m;
   margin-bottom: 5px;
-}
-
-.v-app-bar,
-.v-navigation-drawer {
-  position: fixed;
 }
 </style>
