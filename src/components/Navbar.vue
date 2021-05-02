@@ -48,17 +48,24 @@
       clipped
       :style="{top: $vuetify.application.top + 'px', zIndex: 4}">
       <template v-slot:prepend>
-        <v-list-item v-if="ls.loginCookie">
-          <v-list-item-avatar>
-            <v-img alt="PP"
-                   src="https://images.photowall.com/products/60869/azores-mountain-landscape-1.jpg?h=699&q=85"/>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title>Jane Smith</v-list-item-title>
-            <v-list-item-subtitle>Logged In</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider v-if="ls.loginCookie"/>
+        <v-container v-if="ls.loginCookie" style="height: 75px">
+          <v-list-item v-if="userInfos.avatar">
+            <v-list-item-avatar>
+              <v-img alt="PP"
+                     :src="userInfos.avatar || ''"/>
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title>{{ userInfos.username || '' }}</v-list-item-title>
+              <v-list-item-subtitle>{{ userInfos.email || '' }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <v-skeleton-loader
+            v-else
+            type="list-item-avatar-two-line"
+            boilerplate
+          ></v-skeleton-loader>
+        </v-container>
+        <v-divider v-if="ls.loginCookie" class="mb-3 mt-3"/>
         <v-list
           nav
           flat
@@ -79,7 +86,7 @@
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
-            <v-divider v-if="item.title.includes('divider')"/>
+            <v-divider v-if="item.title.includes('divider')" class="mb-2 mt-2"/>
           </div>
         </v-list>
       </template>
@@ -88,12 +95,15 @@
 </template>
 
 <script>
+import config from '../../config/config.prod.js'
+import axios from 'axios'
+
 export default {
   name: 'Navbar',
   data: () => {
     return {
       ls: {},
-      drawer: false,
+      drawer: true,
       links: [
         {
           icon: 'home',
@@ -112,24 +122,40 @@ export default {
           title: 'Log Out',
           color: 'red'
         }
-      ]
+      ],
+      userInfos: {}
     }
   },
   mounted () {
   },
   created () {
     this.ls = localStorage
+    if (this.ls.loginCookie) {
+      axios.get(`${config.backend.url}:${config.backend.port}/api/v1/user`, {
+        headers: {
+          Authorization: this.ls.loginCookie
+        }
+      })
+        .then(res => {
+          const json = res.data
+          console.log(json)
+          if (res.status !== 200) {
+            this.ls.loginCookie = ''
+            location.reload()
+            return
+          }
+          this.userInfos = {
+            username: json.username + '#' + json.discriminator,
+            avatar: `https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}.png`,
+            email: json.email
+          }
+        })
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.v-divider {
-  $m: 5px;
-  margin-top: $m;
-  margin-bottom: $m;
-}
-
 .list-item {
   $m: 5px;
   margin-top: $m;
